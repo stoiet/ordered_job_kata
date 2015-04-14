@@ -1,0 +1,23 @@
+{
+  "name": "OrderedJobKata",
+  "version": "1.0.0",
+  "description": "",
+  "main": "OrderedJob.js",
+  "devDependencies": {
+    "mocha": "^2.2.4",
+    "chai": "^2.2.0"
+  },
+  "scripts": {
+    "test": "mocha spec/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stoiet/ordered_job_kata.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stoiet/ordered_job_kata/issues"
+  },
+  "homepage": "https://github.com/stoiet/ordered_job_kata"
+}
