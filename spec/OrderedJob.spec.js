@@ -30,9 +30,11 @@ describe("OrderedJob", function () {
         ]
         .forEach(function (testCase) {
             it(testCase.it, function () {
+                
                 testCase.expect.forEach(function (expectValue) {
                    expect(orderedJob.generate(testCase.argument)).to.include(expectValue); 
                 });
+
                 expect(orderedJob.generate(testCase.argument)).to.have.length(testCase.expect.length);
             });
         });
@@ -47,9 +49,11 @@ describe("OrderedJob", function () {
         ]
         .forEach(function (testCase) {
             it(testCase.it, function () {
+
                 testCase.expect.forEach(function (expectValue) {
                    expect(orderedJob.generate(testCase.argument)).to.include(expectValue); 
                 });
+
                 expect(orderedJob.generate(testCase.argument)).to.have.length(testCase.expect.length);
                 expect(orderedJob.generate(testCase.argument)).to.match(testCase.expectPattern);
             });
