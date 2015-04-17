@@ -1,62 +1,48 @@
 var expect = require("chai").expect;
-var OrderedJob = require("../OrderedJob.js");
-
+var OrderedJobs = require("../OrderedJobs.js");
 
 describe("OrderedJob", function () {
-       
+
     describe("#generate", function () {
-        
-        var orderedJob;
-        
+
+        var orderedJobs;
+
         beforeEach(function () {
-            orderedJob = new OrderedJob();
+            orderedJobs = new OrderedJobs();
         });
-        
+
         it("should return empty sequence with empty string given", function () {
-            expect(orderedJob.generate("")).to.eql(""); 
+            expect(orderedJobs.generate("")).to.eql(""); 
         });
 
-        [
-            {
-                it: "should return a sequence of one job with single job given",
-                argument: "a =>",
-                expect: ["a"]
-            },
-            {
-                it: "should return a sequence of jobs with multiple jobs given",
-                argument: "a =>\nb =>\nc =>",
-                expect: ["a", "b", "c"]
-            }
-        ]
-        .forEach(function (testCase) {
-            it(testCase.it, function () {
-                
-                testCase.expect.forEach(function (expectValue) {
-                   expect(orderedJob.generate(testCase.argument)).to.include(expectValue); 
-                });
-
-                expect(orderedJob.generate(testCase.argument)).to.have.length(testCase.expect.length);
-            });
+        it("should return a sequence of one job with single job given", function () {
+            expect(orderedJobs.generate("a =>")).to.include("a"); 
         });
 
-        [
-            {
-                it: "should return a sequence of jobs with multiple jobs given and single dependency",
-                argument: "a =>\nb => c\nc =>",
-                expect: ["a", "b", "c"],
-                expectPattern: /ca*b/
-            }
-        ]
-        .forEach(function (testCase) {
-            it(testCase.it, function () {
+        it("should return a sequence of jobs with multiple jobs given", function () {
 
-                testCase.expect.forEach(function (expectValue) {
-                   expect(orderedJob.generate(testCase.argument)).to.include(expectValue); 
-                });
+            var argument = "a =>\nb =>\nc =>";
+            var expectValues = ["a", "b", "c"];
 
-                expect(orderedJob.generate(testCase.argument)).to.have.length(testCase.expect.length);
-                expect(orderedJob.generate(testCase.argument)).to.match(testCase.expectPattern);
+            expectValues.forEach(function (expectValue) {
+               expect(orderedJobs.generate(argument)).to.include(expectValue); 
             });
+
+            expect(orderedJobs.generate(argument)).to.have.length(expectValues.length);
+        });
+
+        it("should return a sequence of jobs with multiple jobs given and single dependency", function () {
+
+            var argument = "a =>\nb => c\nc =>";
+            var expectValues = ["a", "b", "c"];
+            var expectPattern = /a*ca*ba*/;
+
+            expectValues.forEach(function (expectValue) {
+               expect(orderedJobs.generate(argument)).to.include(expectValue); 
+            });
+
+            expect(orderedJobs.generate(argument)).to.have.length(expectValues.length);
+            expect(orderedJobs.generate(argument)).to.match(expectPattern);
         });
 
     });
