@@ -19,16 +19,14 @@ var Job = (function () {
 var JobDependencyRuleConverter = (function () {
 
     function _JobDependencyRuleConverter(jobDependencyRules) {
-        this.jobDependencyRules = jobDependencyRules;
+        this.jobDependencyRules = jobDependencyRules.split("\n");
     }
 
     _JobDependencyRuleConverter.prototype = {
         toJobs: function () {
-            return this.jobDependencyRules
-                .split("\n")
-                .map((function (jobDependencyRule) {
-                    return new Job(this._getJobName(jobDependencyRule), this._getJobDependency(jobDependencyRule));
-                }).bind(this));
+            return this.jobDependencyRules.map((function (jobDependencyRule) {
+                return new Job(this._getJobName(jobDependencyRule), this._getJobDependency(jobDependencyRule));
+            }).bind(this));
         },
         _getJobName: function (jobDependencyRule) {
             return jobDependencyRule.charAt(0);
