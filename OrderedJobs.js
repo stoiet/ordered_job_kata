@@ -48,6 +48,7 @@ var Jobs = (function () {
 
     function _Jobs(jobs) {
         this.jobs = jobs;
+        this.orderedJobNames = [];
     }
 
     _Jobs.fromJobDependencyRules = function (jobDependencyRules) {
@@ -56,19 +57,16 @@ var Jobs = (function () {
 
     _Jobs.prototype = {
         orderByDependency: function() {
-            var jobNames = this._generateJobNames();
-            this.jobs.forEach(function (job, index) {
-                if (job.hasDependency()) {
-                    jobNames[jobNames.indexOf(job.dependency)] = job.name;
-                    jobNames[index] = job.dependency;
-                }
-            });
-            return jobNames;
+            this.jobs.forEach(this._generateOrderedJobNames.bind(this));
+            return this.orderedJobNames;
         },
-        _generateJobNames: function () {
-            return this.jobs.map(function (job) {
-                return job.name;
-            });
+        _generateOrderedJobNames: function (job, index) {
+            if (!this._isInOrderedJobNames(job.name)) this.orderedJobNames.push(job.name);
+            if (job.hasDependency() && !this._isInOrderedJobNames(job.dependency))
+                this.orderedJobNames.unshift(job.dependency);
+        },
+        _isInOrderedJobNames: function (dependency) {
+            return this.orderedJobNames.indexOf(dependency) !== -1;
         }
     };
 
