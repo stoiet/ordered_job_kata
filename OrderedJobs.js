@@ -61,10 +61,10 @@ var Jobs = (function () {
         getJobs: function () {
             return this.jobs;
         },
-        nextJob: function(dependencyChain) {
-            return this.jobs[this._nextJobIndex(dependencyChain[dependencyChain.length - 1].dependency)];
+        nextJobByDependency: function(dependencyChain) {
+            return this.jobs[this._nextJobIndexByDependency(dependencyChain[dependencyChain.length - 1].dependency)];
         },
-        _nextJobIndex: function (dependency) {
+        _nextJobIndexByDependency: function (dependency) {
             for (var i = 0; i < this.jobs.length; ++i)
                 if (this.jobs[i].name === dependency)
                     break;
@@ -126,7 +126,7 @@ var OrderedJobs = (function () {
             while (dependencyChain[dependencyChain.length - 1].dependency) {
                 if (this._isCircularDependencyChain(dependencyChain))
                     throw new Error("Circular dependency chain!");
-                dependencyChain.push(this.jobs.nextJob(dependencyChain));
+                dependencyChain.push(this.jobs.nextJobByDependency(dependencyChain));
             }
         },
         _isCircularDependencyChain: function (dependencyChain) {
