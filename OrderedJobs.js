@@ -10,6 +10,9 @@ var Job = (function () {
     _Job.prototype = {
         hasDependency: function () {
             return this.dependency !== "";
+        },
+        isSelfReferencing: function () {
+            return this.name === this.dependency;
         }
     };
 
@@ -48,7 +51,6 @@ var Jobs = (function () {
 
     function _Jobs(jobs) {
         this.jobs = jobs;
-        this.orderedJobNames = [];
     }
 
     _Jobs.fromJobDependencyRules = function (jobDependencyRules) {
@@ -56,17 +58,17 @@ var Jobs = (function () {
     };
 
     _Jobs.prototype = {
-        orderByDependency: function() {
-            this.jobs.forEach(this._generateOrderedJobNames.bind(this));
-            return this.orderedJobNames;
+        getJobs: function () {
+            return this.jobs;
         },
-        _generateOrderedJobNames: function (job, index) {
-            if (!this._isInOrderedJobNames(job.name)) this.orderedJobNames.push(job.name);
-            if (job.hasDependency() && !this._isInOrderedJobNames(job.dependency))
-                this.orderedJobNames.unshift(job.dependency);
+        nextJob: function(dependencyChain) {
+            return this.jobs[this._nextJobIndex(dependencyChain[dependencyChain.length - 1].dependency)];
         },
-        _isInOrderedJobNames: function (dependency) {
-            return this.orderedJobNames.indexOf(dependency) !== -1;
+        _nextJobIndex: function (dependency) {
+            for (var i = 0; i < this.jobs.length; ++i)
+                if (this.jobs[i].name === dependency)
+                    break;
+            return i;
         }
     };
 
@@ -75,16 +77,60 @@ var Jobs = (function () {
 
 var OrderedJobs = (function () {
 
-    function _OrderedJobs () {}
+    function _OrderedJobs () {
+        this.jobs = null;
+        this.orderedJobs = [];
+    }
     
     _OrderedJobs.prototype = {
         generate: function (jobDependencyRules) {
             if (this._isEmpty(jobDependencyRules)) return "";
-            var orderedJobs = Jobs.fromJobDependencyRules(jobDependencyRules).orderByDependency();
-            return orderedJobs.join("");
+            this.jobs = Jobs.fromJobDependencyRules(jobDependencyRules);
+            return this._orderByDependency().join("");
         },
         _isEmpty: function(jobDependencyRules) {
             return jobDependencyRules === "";
+        },
+        _orderByDependency: function() {
+            this.jobs.getJobs().forEach(this._generateOrderedJobs.bind(this));
+            return this.orderedJobs;
+        },
+        _generateOrderedJobs: function (job) {
+            this._validateDependencies();
+            this._addNewJob(job);
+            this._addNewDependency(job);
+        },
+        _addNewJob: function (job) {
+            if (!this._isAlreadyAdded(job.name))
+                this.orderedJobs.push(job.name);
+        },
+        _addNewDependency: function (job) {
+            if (this._isDependencyAddable(job))
+                this.orderedJobs.unshift(job.dependency);
+        },
+        _isDependencyAddable: function (job) {
+            return job.hasDependency() && !this._isAlreadyAdded(job.dependency);
+        },
+        _isAlreadyAdded: function (dependency) {
+            return this.orderedJobs.indexOf(dependency) !== -1;
+        },
+        _validateDependencies: function () {
+            var dependencyChain = [];
+            for (var i = 0; i < this.jobs.getJobs().length; ++i) {
+                if (this.jobs.getJobs()[i].isSelfReferencing()) continue;
+                dependencyChain = []; dependencyChain.push(this.jobs.getJobs()[i]);
+                this._isCircularDependencyChainGiven(dependencyChain);
+            }
+        },
+        _isCircularDependencyChainGiven: function (dependencyChain) {
+            while (dependencyChain[dependencyChain.length - 1].dependency) {
+                if (this._isCircularDependencyChain(dependencyChain))
+                    throw new Error("Circular dependency chain!");
+                dependencyChain.push(this.jobs.nextJob(dependencyChain));
+            }
+        },
+        _isCircularDependencyChain: function (dependencyChain) {
+            return dependencyChain[dependencyChain.length - 1].dependency === dependencyChain[0].name;
         }
     };
     

@@ -1,7 +1,7 @@
 var expect = require("chai").expect;
 var OrderedJobs = require("../OrderedJobs.js");
 
-describe("OrderedJob", function () {
+describe("OrderedJobs", function () {
 
     describe("#generate", function () {
 
@@ -31,7 +31,7 @@ describe("OrderedJob", function () {
             expect(orderedJobs.generate(argument)).to.have.length(expectValues.length);
         });
 
-        it("should return a sequence of jobs with multiple jobs given and single dependency", function () {
+        it("should return a sequence of jobs with multiple jobs given and single dependency given", function () {
 
             var argument = "a =>\nb => c\nc =>";
             var expectValues = ["a", "b", "c"];
@@ -45,7 +45,7 @@ describe("OrderedJob", function () {
             expect(orderedJobs.generate(argument)).to.match(expectPattern);
         });
 
-        it("should return a sequence of jobs with multiple jobs given and multiple dependency", function () {
+        it("should return a sequence of jobs with multiple jobs given and multiple dependency given", function () {
 
             var argument = "a =>\nb => c\nc => f\nd => a\ne => b\nf =>";
             var expectValues = ["a", "b", "c", "d", "e", "f"];
@@ -62,7 +62,7 @@ describe("OrderedJob", function () {
             });
         });
 
-        it("should return a sequence of jobs with multiple jobs given and self referencing dependency", function () {
+        it("should return a sequence of jobs with multiple jobs given and self referencing dependency given", function () {
 
             var argument = "a =>\nb =>\nc => c";
             var expectValues = ["a", "b", "c"];
@@ -72,6 +72,10 @@ describe("OrderedJob", function () {
             });
 
             expect(orderedJobs.generate(argument)).to.have.length(expectValues.length);
+        });
+
+        it("should return throw an error with circular dependency chain given", function () {
+            expect(orderedJobs.generate.bind(orderedJobs, "a =>\nb => c\nc => f\nd => a\ne =>\nf => b")).to.throw("Circular dependency chain!");
         });
 
     });
