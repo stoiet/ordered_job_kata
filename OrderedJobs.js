@@ -86,10 +86,22 @@ var Jobs = (function () {
         getJobs: function () {
             return this.jobs;
         },
+        getDependencyChainOf: function (job) {
+            var dependencyChain = [];
+            var temporaryJob    = job;
+
+            dependencyChain.push(temporaryJob.name);
+            while (temporaryJob.hasDependency()) {
+                temporaryJob = this._nextJob(temporaryJob);
+                dependencyChain.push(temporaryJob.name);
+            }
+
+            return dependencyChain;
+        },
         checkDependencyChainConflicts: function (job) {
             this._isSelfReferencing(job);
             this._isCircularDependencyChain(job);
-        },
+        },        
         _isSelfReferencing: function (job) {
             if (job.isSelfReferencing())
                 throw new Error("Self Referencing!");
@@ -101,6 +113,9 @@ var Jobs = (function () {
                 if (temporaryJob.name === job.name)
                     throw new Error("Circular Dependency Chain!");
             }
+        },
+        _nextJob: function (job) {
+            return this.jobs[job.dependency.index];
         }
     };
 
@@ -131,26 +146,21 @@ var OrderedJobs = (function () {
         },
         _generateOrderedJobNames: function (job) {
             this.jobs.getJobs().forEach((function (job, index, jobs) {
-                if (!job.hasDependency()) this._AddJobNameToOrderedJobNames(job.name);
-                else this._AddDependencyChainToOrderedJobNames(job);
+                if (!job.hasDependency()) this._addJobNameToOrderedJobNames(job.name);
+                else this._addDependencyChainToOrderedJobNames(job);
             }).bind(this));
         },
-        _AddJobNameToOrderedJobNames: function (jobName) {
+        _addJobNameToOrderedJobNames: function (jobName) {
             if (this._isNotInOrderedJobNames(jobName))
                 this.orderedJobNames.push(jobName);
         },
-        _AddDependencyChainToOrderedJobNames: function (job) {
-            var reverseDependencyChain = [];
-            var temporaryJob = job;
-            if (this._isNotInOrderedJobNames(temporaryJob.name)) {
-                reverseDependencyChain.push(temporaryJob.name);
-                while (temporaryJob.hasDependency()) {
-                    temporaryJob = this.jobs.getJobs()[temporaryJob.dependency.index];
-                    if (this._isNotInOrderedJobNames(temporaryJob.name))
-                        reverseDependencyChain.push(temporaryJob.name);
-                }
-                this.orderedJobNames = this.orderedJobNames.concat(reverseDependencyChain.reverse());
-            }
+        _addDependencyChainToOrderedJobNames: function (job) {
+            this.orderedJobNames = this.orderedJobNames.concat(this._getReverseDependencyChainOf(job).reverse());
+        },
+        _getReverseDependencyChainOf: function (job) {
+            return this.jobs.getDependencyChainOf(job).filter((function (jobName) {
+                return this._isNotInOrderedJobNames(jobName);
+            }).bind(this));
         },
         _isNotInOrderedJobNames: function (jobName) {
             return this.orderedJobNames.indexOf(jobName) === -1;
