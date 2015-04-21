@@ -132,24 +132,24 @@ var OrderedJobs = (function () {
         _generateOrderedJobNames: function (job) {
             this.jobs.getJobs().forEach((function (job, index, jobs) {
                 if (!job.hasDependency()) this._AddJobNameToOrderedJobNames(job.name);
-                else this._AddDependenciesToOrderedJobNames(job);
+                else this._AddDependencyChainToOrderedJobNames(job);
             }).bind(this));
         },
         _AddJobNameToOrderedJobNames: function (jobName) {
             if (this._isNotInOrderedJobNames(jobName))
                 this.orderedJobNames.push(jobName);
         },
-        _AddDependenciesToOrderedJobNames: function (job) {
-            var reverseOrderedJobNames = [];
+        _AddDependencyChainToOrderedJobNames: function (job) {
+            var reverseDependencyChain = [];
             var temporaryJob = job;
             if (this._isNotInOrderedJobNames(temporaryJob.name)) {
-                reverseOrderedJobNames.push(temporaryJob.name);
+                reverseDependencyChain.push(temporaryJob.name);
                 while (temporaryJob.hasDependency()) {
                     temporaryJob = this.jobs.getJobs()[temporaryJob.dependency.index];
                     if (this._isNotInOrderedJobNames(temporaryJob.name))
-                        reverseOrderedJobNames.push(temporaryJob.name);
+                        reverseDependencyChain.push(temporaryJob.name);
                 }
-                this.orderedJobNames = this.orderedJobNames.concat(reverseOrderedJobNames.reverse());
+                this.orderedJobNames = this.orderedJobNames.concat(reverseDependencyChain.reverse());
             }
         },
         _isNotInOrderedJobNames: function (jobName) {
