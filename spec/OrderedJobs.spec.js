@@ -12,7 +12,7 @@ describe("OrderedJobs", function () {
         });
 
         it("should return empty sequence with empty string given", function () {
-            expect(orderedJobs.generate("")).to.eql(""); 
+            expect(orderedJobs.generate("")).to.eql("");
         });
 
         it("should return a sequence of one job with single job given", function () {
@@ -63,19 +63,11 @@ describe("OrderedJobs", function () {
         });
 
         it("should return a sequence of jobs with multiple jobs given and self referencing dependency given", function () {
-
-            var argument = "a =>\nb =>\nc => c";
-            var expectValues = ["a", "b", "c"];
-
-            expectValues.forEach(function (expectValue) {
-               expect(orderedJobs.generate(argument)).to.include(expectValue); 
-            });
-
-            expect(orderedJobs.generate(argument)).to.have.length(expectValues.length);
+            expect(orderedJobs.generate.bind(orderedJobs, "a =>\nb =>\nc => c")).to.throw("Self Referencing!");
         });
 
         it("should return throw an error with circular dependency chain given", function () {
-            expect(orderedJobs.generate.bind(orderedJobs, "a =>\nb => c\nc => f\nd => a\ne =>\nf => b")).to.throw("Circular dependency chain!");
+            expect(orderedJobs.generate.bind(orderedJobs, "a =>\nb => c\nc => f\nd => a\ne =>\nf => b")).to.throw("Circular Dependency Chain!");
         });
 
     });
